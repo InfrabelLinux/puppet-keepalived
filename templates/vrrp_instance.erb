@@ -182,7 +182,7 @@ vrrp_instance <%= @_name %> {
   <%- end -%>
   <%- vroutes.each do |route| -%>
     <%- attrs = Hash[ route.select { |k,v| ['src', 'to', 'via', 'dev', 'scope', 'table', 'metric'].include? k } ] -%>
-    <%= route['route'] %>  <%= attrs.sort_by{ |k,v| k }.entries.join ' ' %>
+    <%= route['route'] %> <%= attrs.entries.join ' ' %>
   <%- end -%>
   }
   <%- end -%>
@@ -190,7 +190,7 @@ vrrp_instance <%= @_name %> {
 
   virtual_rules {
   <%-  @virtual_rules.each do |rule| -%>
-    <%= rule['rule'] %>  <%= rule.sort_by{ |k,v| k }.entries.join ' ' %>
+    <%= rule['rule'] %> <%= rule.entries.join ' ' %>
   <%- end -%>
   }
   <%- end -%>

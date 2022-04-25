@@ -849,7 +849,11 @@ describe 'keepalived::vrrp::instance', type: :define do
         let(:params) do
           mandatory_params.merge(
             virtual_rules: [{ 'from' => '10.0.1.24', 'lookup' => 'customroute1' },
-                            { 'from' => '10.0.2.24', 'lookup' => 'customroute2' }]
+                            { 'from' => '10.0.2.24', 'lookup' => 'customroute2' },
+                            { 'to' => '10.1.2.0/24', 'lookup' => 'customroute3' },
+                            { 'to' => '10.1.3.0/24', 'lookup' => 'customroute4', 'preference' => '100' },
+                            { 'iif' => 'eth0', 'lookup' => 'customroute5', 'preference' => '200' },
+                            { 'oif' => 'eth1', 'lookup' => 'customroute6', 'preference' => '300' }]
           )
         end
 
@@ -864,6 +868,22 @@ describe 'keepalived::vrrp::instance', type: :define do
             contain_concat__fragment('keepalived.conf_vrrp_instance__NAME_').with(
               'content' => %r{^\s+from 10\.0\.2\.24 lookup customroute2}
             )
+          is_expected.to \
+            contain_concat__fragment('keepalived.conf_vrrp_instance__NAME_').with(
+              'content' => %r{^\s+to 10\.1\.2\.0/24 lookup customroute3}
+            )
+          is_expected.to \
+            contain_concat__fragment('keepalived.conf_vrrp_instance__NAME_').with(
+              'content' => %r{^\s+to 10\.1\.3\.0/24 lookup customroute4 preference 100}
+            )
+          is_expected.to \
+            contain_concat__fragment('keepalived.conf_vrrp_instance__NAME_').with(
+              'content' => %r{^\s+iif eth0 lookup customroute5 preference 200}
+            )
+          is_expected.to \
+            contain_concat__fragment('keepalived.conf_vrrp_instance__NAME_').with(
+              'content' => %r{^\s+oif eth1 lookup customroute6 preference 300}
+            )
         }
       end
 
@@ -871,9 +891,9 @@ describe 'keepalived::vrrp::instance', type: :define do
       describe 'with virtual_routes as hash containing device parameter' do
         let(:params) do
           mandatory_params.merge(
-            virtual_routes: [{ 'to' => '10.0.1.0/24',
-                               'via' => '192.168.0.1',
-                               'dev' => '_DEV_' }]
+            virtual_routes: [{ 'dev' => '_DEV_',
+                               'to' => '10.0.1.0/24',
+                               'via' => '192.168.0.1' }]
           )
         end
 
@@ -890,9 +910,9 @@ describe 'keepalived::vrrp::instance', type: :define do
       describe 'with virtual_routes as hash containing src parameter' do
         let(:params) do
           mandatory_params.merge(
-            virtual_routes: [{ 'to' => '10.0.1.0/24',
-                               'via' => '192.168.0.1',
-                               'src' => '_SOURCE_' }]
+            virtual_routes: [{ 'src' => '_SOURCE_',
+                               'to' => '10.0.1.0/24',
+                               'via' => '192.168.0.1' }]
           )
         end
 
@@ -910,9 +930,9 @@ describe 'keepalived::vrrp::instance', type: :define do
         let(:params) do
           mandatory_params.merge(
             virtual_ipaddress_int: '_VALUE_',
-            virtual_routes: [{ 'to' => '10.0.1.0/24',
-                               'via' => '192.168.0.1',
-                               'scope' => '_SCOPE_' }]
+            virtual_routes: [{ 'scope' => '_SCOPE_',
+                               'to' => '10.0.1.0/24',
+                               'via' => '192.168.0.1' }]
           )
         end
 
@@ -930,9 +950,9 @@ describe 'keepalived::vrrp::instance', type: :define do
         let(:params) do
           mandatory_params.merge(
             virtual_ipaddress_int: '_VALUE_',
-            virtual_routes: [{ 'to' => '10.0.1.0/24',
-                               'via' => '192.168.0.1',
-                               'table' => '_TABLE_' }]
+            virtual_routes: [{ 'table' => '_TABLE_',
+                               'to' => '10.0.1.0/24',
+                               'via' => '192.168.0.1' }]
           )
         end
 
@@ -942,6 +962,26 @@ describe 'keepalived::vrrp::instance', type: :define do
           is_expected.to \
             contain_concat__fragment('keepalived.conf_vrrp_instance__NAME_').with(
               'content' => %r{table _TABLE_ to 10\.0\.1\.0/24 via 192\.168\.0\.1}
+            )
+        }
+      end
+
+      describe 'with virtual_routes as hash containing route, dev & table parameter' do
+        let(:params) do
+          mandatory_params.merge(
+            virtual_ipaddress_int: '_VALUE_',
+            virtual_routes: [{ 'route' => '10.0.1.0/24',
+                               'dev' => 'eth0',
+                               'table' => '_TABLE_' }]
+          )
+        end
+
+        it { is_expected.to create_keepalived__vrrp__instance('_NAME_') }
+
+        it {
+          is_expected.to \
+            contain_concat__fragment('keepalived.conf_vrrp_instance__NAME_').with(
+              'content' => %r{10\.0\.1\.0/24 dev eth0 table _TABLE_}
             )
         }
       end
